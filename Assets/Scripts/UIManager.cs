@@ -62,7 +62,6 @@ public class UIManager : MonoBehaviour
     #region Unity Lifecycle
     private void Update()
     {
-        // Guard Clause: Only update HUD if the game is actively running
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsPaused) return;
 
         UpdateTopHUDAnimations();
@@ -75,7 +74,7 @@ public class UIManager : MonoBehaviour
     {
         GameConfigSO cfg = gameManager.config;
 
-        // 1. Base HP & Ghost Bar (Mathf.InverseLerp + Mathf.Lerp)
+        // 1. Base HP & Ghost Bar (Mathf.InverseLerp + Mathf.Lerp) // hp & ghostbar 
         float targetHPFill = Mathf.InverseLerp(0f, gameManager.MaxBaseHP, gameManager.CurrentBaseHP);
         if (hpMainBarFill != null) hpMainBarFill.fillAmount = targetHPFill;
 

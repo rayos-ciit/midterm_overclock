@@ -13,7 +13,7 @@ public class ProjectileController : MonoBehaviour
     private Vector2 originTowerPos;
     private HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>();
 
-    // For Saboteur EMP Projectile
+    //for sabo emp projectile 
     private bool isEMPShot = false;
     private TowerController targetTower;
 
@@ -111,7 +111,7 @@ public class ProjectileController : MonoBehaviour
     {
         transform.position += (Vector3)(moveDir * speed * Time.deltaTime);
 
-        // Respect turret Range Ring via sqrMagnitude
+        //retains proper turret range
         if (((Vector2)transform.position - originTowerPos).sqrMagnitude > maxRange * maxRange)
         {
             Destroy(gameObject);

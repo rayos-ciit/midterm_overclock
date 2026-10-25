@@ -11,7 +11,6 @@ public class CoinPickupEffect : MonoBehaviour
     private Vector3 targetWorldPos;
     private float timer = 0f;
     
-    // Strict Dependency Injection reference
     private GameManager gameManager;
 
     public static void SpawnCoin(Vector3 spawnPos, int gold, Vector3 hudTargetWorldPos, GameManager gm)
@@ -30,7 +29,7 @@ public class CoinPickupEffect : MonoBehaviour
         CoinPickupEffect fx = go.AddComponent<CoinPickupEffect>();
         fx.goldAmount = gold;
         fx.targetWorldPos = hudTargetWorldPos;
-        fx.gameManager = gm; // Inject the dependency!
+        fx.gameManager = gm;
 
         float randRad = Random.Range(0f, Mathf.PI * 2f);
         fx.burstVelocity = new Vector3(Mathf.Cos(randRad), Mathf.Sin(randRad), 0f) * Random.Range(2f, 3.5f);

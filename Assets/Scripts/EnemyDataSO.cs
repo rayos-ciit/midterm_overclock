@@ -30,7 +30,7 @@ public class EnemyDataSO : ScriptableObject
     public EnemyKind kind;
     public EnemyStats stats;
 
-    // Fallback factory to auto-generate exact TDD stats if Inspector assets aren't set up yet
+    //createdefault to fall back on just in case
     public static EnemyDataSO CreateDefault(EnemyKind type)
     {
         EnemyDataSO data = CreateInstance<EnemyDataSO>();

@@ -48,7 +48,7 @@ public class EnemyWorldBars : MonoBehaviour
         lr.positionCount = 2;
         lr.startWidth = width;
         lr.endWidth = width;
-        lr.numCapVertices = 0; // Pure quad for performance
+        lr.numCapVertices = 0;
         lr.startColor = col;
         lr.endColor = col;
         
@@ -91,7 +91,6 @@ public class EnemyWorldBars : MonoBehaviour
         latchBarFill.SetPosition(0, latchLeft);
         latchBarFill.SetPosition(1, Vector3.Lerp(latchLeft, latchRight, latchProgress));
 
-        // Pulse the laser using Mathf.PingPong
         float pulse = Mathf.PingPong(Time.time * 5f, 1f);
         Color laserCol = Color.Lerp(new Color(1f, 0.9f, 0.1f, 0.35f), new Color(1f, 0.2f, 0.1f, 1f), pulse) * 1.6f;
         

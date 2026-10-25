@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 549bd23258d94fc4a9e661925b2aec59, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GameConfigSO
+  maxBaseHP: 100
+  startingGold: 250
+  baseXPToLevel: 100
+  xpPerGoldEarned: 1.2
+  ghostBarLerpSpeed: 3.5
+  expBarLerpSpeed: 5
+  goldTextLerpSpeed: 10
+  coinFlyLerpSpeed: 6.5
+  waves:
+  - grunts: 6
+    saboteurs: 0
+    assassins: 0
+    spawnInterval: 2
+  - grunts: 8
+    saboteurs: 2
+    assassins: 0
+    spawnInterval: 1.8
+  - grunts: 10
+    saboteurs: 3
+    assassins: 1
+    spawnInterval: 1.7
+  - grunts: 12
+    saboteurs: 4
+    assassins: 2
+    spawnInterval: 1.5
+  - grunts: 14
+    saboteurs: 6
+    assassins: 3
+    spawnInterval: 1.4
+  - grunts: 16
+    saboteurs: 7
+    assassins: 4
+    spawnInterval: 1.3
+  - grunts: 18
+    saboteurs: 8
+    assassins: 5
+    spawnInterval: 1.2
+  - grunts: 20
+    saboteurs: 10
+    assassins: 6
+    spawnInterval: 1.1
+  - grunts: 24
+    saboteurs: 12
+    assassins: 8
+    spawnInterval: 1
+  - grunts: 30
+    saboteurs: 15
+    assassins: 10
+    spawnInterval: 0.8
