@@ -4,8 +4,6 @@ using UnityEngine.EventSystems;
 public class BuildPlacementController : MonoBehaviour
 {
     #region Dependencies (Strict Dependency Injection)
-    // By using [SerializeField], we inject these via the Inspector. 
-    // ZERO .Instance calls and ZERO FindObjectOfType calls!
     [Header("Injected Managers")]
     [SerializeField] private GameManager gameManager;
     [SerializeField] private GridPathManager gridManager;
@@ -37,13 +35,12 @@ public class BuildPlacementController : MonoBehaviour
     #endregion
 
     #region State Variables
-    // Tracks if an Assassin has temporarily disabled a specific hotkey (0, 1, or 2)
+    //tracks what the assassin class disabled
     [HideInInspector] public float[] buildButtonDisableTimers = new float[3];
 
-    // Current selected tower index (-1 means not in build mode)
     private int selectedBuildIndex = -1;
 
-    // Ghost Preview rendering objects
+    //"ghost" preview rendering objects
     private GameObject ghostRoot;
     private VectorShapeRenderer ghostBodyShape;
     private VectorShapeRenderer ghostRangeRing;
@@ -56,14 +53,13 @@ public class BuildPlacementController : MonoBehaviour
     #region Initialization & Setup
     private void Awake()
     {
-        // Caching Camera.main is a massive performance boost over calling it every frame
+        //caching Camera.main
         mainCamera = Camera.main; 
         
         CreateGhostPreviewObjects();
         CancelBuildMode();
     }
 
-    // Optional: Public method to inject via code instead of Inspector if desired
     public void InjectDependencies(GameManager gm, GridPathManager grid, AudioShakeManager audio)
     {
         gameManager = gm;
@@ -78,10 +74,8 @@ public class BuildPlacementController : MonoBehaviour
         UpdateSabotageTimers();
         HandleTowerSelectionHotkeys();
 
-        // Guard Clause: Stop executing if we aren't actively trying to place a tower
         if (!IsInBuildMode) return;
 
-        // Guard Clause: Exit build mode on Right-Click or Escape
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
             CancelBuildMode();
@@ -113,7 +107,6 @@ public class BuildPlacementController : MonoBehaviour
 
     public void DisableBuildSlotFromAssassin(int slotIndex, float duration = 12f)
     {
-        // Guard Clause: Prevent out-of-bounds array access
         if (slotIndex < 0 || slotIndex >= buildButtonDisableTimers.Length) return;
 
         buildButtonDisableTimers[slotIndex] = duration;
@@ -128,10 +121,8 @@ public class BuildPlacementController : MonoBehaviour
     #region Build Mode Management
     public void SelectTowerToBuild(int index)
     {
-        // Guard Clause: Invalid index bounds
         if (index < 0 || index >= towerOptions.Length) return;
 
-        // Guard Clause: Stop selection if Assassin sabotaged this button
         if (buildButtonDisableTimers[index] > 0f)
         {
             Debug.LogWarning($"{towerOptions[index].towerName} build button is SABOTAGED for {buildButtonDisableTimers[index]:F1}s!");
@@ -167,7 +158,6 @@ public class BuildPlacementController : MonoBehaviour
     #region Preview Rendering & Placement Execution
     private void UpdateGhostPreviewAndPlacement()
     {
-        // Guard Clause: Safety check to ensure Inspector dependencies are assigned
         if (gridManager == null || gameManager == null) return;
 
         Vector2 mouseWorld = mainCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -178,7 +168,6 @@ public class BuildPlacementController : MonoBehaviour
 
         TowerBuildOption option = towerOptions[selectedBuildIndex];
         
-        // Check grid blocking and economy
         bool isTileFree = gridManager.CanBuildAtCell(cell);
         bool canAfford = gameManager.CurrentGold >= option.level1Cost;
         bool isValidPlacement = isTileFree && canAfford;
@@ -190,7 +179,6 @@ public class BuildPlacementController : MonoBehaviour
         ghostBodyShape.ApplyColor(previewColor);
         ghostRangeRing.ApplyColor(previewColor);
 
-        // Attempt placement on Left Click
         if (Input.GetMouseButtonDown(0))
         {
             TryExecutePlacement(isValidPlacement, option, snappedCenter, cell);
@@ -199,35 +187,35 @@ public class BuildPlacementController : MonoBehaviour
 
     private void TryExecutePlacement(bool isValidPlacement, TowerBuildOption option, Vector2 snappedCenter, Vector2Int cell)
     {
-        // Guard Clause: Prevent building if the player clicked a UI button
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
         
-        // Guard Clause: Prevent building if placement is blocked or too expensive
         if (!isValidPlacement) return;
 
         if (gameManager.SpendGold(option.level1Cost))
         {
             GameObject newTower = TowerController.SpawnProceduralTower(selectedBuildIndex, snappedCenter, cell);
             
-            // Pass the injected dependencies directly down into the new tower!
             TowerController towerComponent = newTower.GetComponent<TowerController>();
             if (towerComponent != null)
             {
                 towerComponent.InjectDependencies(gameManager, gridManager, audioManager, this);
             }
-
             gridManager.RegisterTowerAtCell(cell, newTower);
-            CancelBuildMode(); // Exit build mode immediately so the next click can Overclock!
+            CancelBuildMode();
         }
     }
 
     private void CreateGhostPreviewObjects()
     {
         ghostRoot = new GameObject("GhostPlacementPreview");
-        
-        ghostBodyShape = ghostRoot.AddComponent<VectorShapeRenderer>();
+
+        GameObject bodyObj = new GameObject("GhostBody");
+        bodyObj.transform.SetParent(ghostRoot.transform);
+        bodyObj.transform.localPosition = Vector3.zero;
+
+        ghostBodyShape = bodyObj.AddComponent<VectorShapeRenderer>();
         ghostBodyShape.lineWidth = 0.04f;
-        ghostBodyShape.animateIdlePulse = false;
+        ghostBodyShape.animateIdlePulse = true; 
 
         GameObject ringObj = new GameObject("GhostRangeRing");
         ringObj.transform.SetParent(ghostRoot.transform);

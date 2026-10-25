@@ -66,7 +66,6 @@ public class GameManager : MonoBehaviour
 
     public bool SpendGold(int amount)
     {
-        // Guard Clause
         if (CurrentGold < amount) return false;
         
         CurrentGold -= amount;
@@ -91,7 +90,6 @@ public class GameManager : MonoBehaviour
 
     public void DamageBase(int dmg)
     {
-        // Guard Clause
         if (!IsGameActive) return;
 
         CurrentBaseHP = Mathf.Max(0f, CurrentBaseHP - dmg);

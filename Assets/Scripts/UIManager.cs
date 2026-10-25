@@ -128,7 +128,11 @@ public class UIManager : MonoBehaviour
             {
                 int upgCost = oc.GetNextUpgradeCost();
                 string upgStr = upgCost > 0 ? $"[U] Upgrade ({upgCost}g)" : "MAX LVL";
-                overclockStatusText.text = $"OVERCLOCKED (Lvl {oc.level}) | {upgStr} | [X] Sell (+{oc.GetSellRefundGold()}g) | [R / Right-Click] Auto";
+                
+                int heatPercent = Mathf.RoundToInt((oc.currentHeat / oc.maxHeat) * 100f);
+                string heatStr = $"HEAT: {heatPercent}%";
+                
+                overclockStatusText.text = $"OVERCLOCKED (Lvl {oc.level}) | {heatStr} | {upgStr} | [X] Sell (+{oc.GetSellRefundGold()}g) | [R / Right-Click] Auto";
             }
             else
             {

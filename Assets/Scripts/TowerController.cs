@@ -5,13 +5,11 @@ using UnityEngine.EventSystems;
 public abstract class TowerController : MonoBehaviour
 {
     #region Static Tracking
-    // Tracking active towers via a static list avoids expensive FindObjectsOfType calls.
     public static readonly List<TowerController> ActiveTowers = new List<TowerController>();
     public static TowerController CurrentlyOverclockedTower { get; private set; }
     #endregion
 
     #region Injected Dependencies
-    // Strict Dependency Injection: No Singleton .Instance calls allowed!
     protected GameManager gameManager;
     protected GridPathManager gridManager;
     protected AudioShakeManager audioManager;
@@ -39,6 +37,14 @@ public abstract class TowerController : MonoBehaviour
     protected float fireCooldown = 0f;
     protected VectorShapeRenderer turretShape;
     protected VectorShapeRenderer rangeRingShape;
+
+    [Header("Overheat Mechanics")]
+    public float currentHeat = 0f;
+    public float maxHeat = 8f;
+    public float heatBuildupRate = 1f;
+    public float heatCoolDownRate = 2f;
+    public float overheatPenaltyDuration = 4f;
+    private bool isOverheated = false;
     #endregion
 
     #region Properties
@@ -78,7 +84,6 @@ public abstract class TowerController : MonoBehaviour
         return go;
     }
 
-    // Constructor-style injection satisfies strict Dependency Injection rules
     public void InjectDependencies(GameManager gm, GridPathManager gridPath, AudioShakeManager audioMgr, BuildPlacementController buildCtrl)
     {
         gameManager = gm;
@@ -95,16 +100,21 @@ public abstract class TowerController : MonoBehaviour
         towerData = customData != null ? customData : TowerDataSO.CreateDefaultData(typeIdx);
         totalInvestedGold = towerData.levels[0].cost;
 
-        turretShape = gameObject.AddComponent<VectorShapeRenderer>();
+        GameObject bodyObj = new GameObject("TurretBody_Visual");
+        bodyObj.transform.SetParent(transform);
+        bodyObj.transform.localPosition = Vector3.zero;
+
+        turretShape = bodyObj.AddComponent<VectorShapeRenderer>();
         turretShape.shapeType = towerData.shapeType;
         turretShape.baseColor = towerData.baseColor;
         turretShape.radius = 0.38f;
         turretShape.lineWidth = 0.055f;
+        turretShape.animateIdlePulse = true;
 
         GameObject ringObj = new GameObject("RangeRing");
-        ringObj.transform.SetParent(transform);
+        ringObj.transform.SetParent(transform); 
         ringObj.transform.localPosition = Vector3.zero;
-        
+
         rangeRingShape = ringObj.AddComponent<VectorShapeRenderer>();
         rangeRingShape.shapeType = VectorShapeRenderer.ShapeType.RegularPolygon;
         rangeRingShape.polygonSides = 48;
@@ -136,12 +146,22 @@ public abstract class TowerController : MonoBehaviour
     {
         UpdateDebuffTimers();
 
-        // Guard Clause: Do not execute combat logic if disabled by a Saboteur
         if (IsDisabled) return; 
 
         if (fireCooldown > 0f) 
         {
             fireCooldown -= Time.deltaTime;
+        }
+
+        if (!IsOverclocked && currentHeat > 0f)
+        {
+            currentHeat -= heatCoolDownRate * Time.deltaTime;
+            currentHeat = Mathf.Max(0f, currentHeat);
+            
+            if (isOverheated && currentHeat <= 0f)
+            {
+                isOverheated = false;
+            }
         }
 
         CheckForPlayerClickTakeover();
@@ -154,6 +174,8 @@ public abstract class TowerController : MonoBehaviour
         {
             HandleAutonomousControl();
         }
+
+        
     }
     #endregion
 
@@ -181,7 +203,6 @@ public abstract class TowerController : MonoBehaviour
     #region Manual Overclocking
     private void CheckForPlayerClickTakeover()
     {
-        // Guard Clauses (Early Returns) flatten the code and make it readable!
         if (buildController != null && buildController.IsInBuildMode) return;
         if (!Input.GetMouseButtonDown(0)) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
@@ -192,13 +213,19 @@ public abstract class TowerController : MonoBehaviour
 
         if (sqrDist > 0.48f * 0.48f) return;
 
+        if (isOverheated) 
+        {
+            if (audioManager != null) audioManager.PlayUIClick(0.3f); // Maybe a dull "error" click
+            return;
+        }
+
         TakeOverTurret();
         fireCooldown = Mathf.Max(fireCooldown, 0.12f);
     }
 
     private void HandleManualOverclockControl()
     {
-        // Guard Clause: Check for exit inputs first
+        //makes sure to check for input first
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.R))
         {
             ReleaseOverclock();
@@ -207,16 +234,25 @@ public abstract class TowerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.U)) TryUpgradeTower();
         
-        // Guard Clause: Stop execution if tower was sold this frame
         if (Input.GetKeyDown(KeyCode.X))
         {
             SellTower();
             return; 
         }
 
+        currentHeat += heatBuildupRate * Time.deltaTime;
+        
+        if (currentHeat >= maxHeat)
+        {
+            isOverheated = true;
+            DisableTowerFromSaboteur(overheatPenaltyDuration);
+            ReleaseOverclock();
+            //TODO: Play a "hiss" or "power down" sound here!
+            return;
+        }
+
         AimAtCursor();
 
-        // Guard Clause: Prevent firing if cooldown is active or clicking UI
         if (!Input.GetMouseButton(0) || fireCooldown > 0f) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
@@ -231,7 +267,7 @@ public abstract class TowerController : MonoBehaviour
         Vector2 mouseWorld = mainCam.ScreenToWorldPoint(Input.mousePosition);
         Vector2 direction = mouseWorld - (Vector2)transform.position;
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0f, 0f, targetAngle);
+        turretShape.transform.rotation = Quaternion.Euler(0f, 0f, targetAngle);
     }
 
     public void TakeOverTurret()
@@ -276,19 +312,18 @@ public abstract class TowerController : MonoBehaviour
     {
         EnemyController target = FindClosestAutoTarget();
         
-        // Guard Clause: No target found
         if (target == null) return;
 
         Vector2 toTarget = (Vector2)target.transform.position - (Vector2)transform.position;
         float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
 
         Quaternion desiredRot = Quaternion.Euler(0f, 0f, targetAngle);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRot, 260f * Time.deltaTime);
 
-        // Guard Clause: Cooldown active or target out of specific firing angle
+        turretShape.transform.rotation = Quaternion.RotateTowards(turretShape.transform.rotation, desiredRot, 260f * Time.deltaTime);
+
         if (fireCooldown > 0f || !CanAutoFire(toTarget)) return;
 
-        ExecuteFire(transform.right, isManual: false);
+        ExecuteFire(turretShape.transform.right, isManual: false);
     }
 
     private void ExecuteFire(Vector2 aimDir, bool isManual)
@@ -350,7 +385,6 @@ public abstract class TowerController : MonoBehaviour
     #region Economy & Upgrades
     public int GetNextUpgradeCost()
     {
-        // Guard Clause
         if (level >= towerData.levels.Length) return -1; 
         
         return towerData.levels[level].cost;
@@ -365,7 +399,6 @@ public abstract class TowerController : MonoBehaviour
     {
         int cost = GetNextUpgradeCost();
         
-        // Guard Clauses
         if (cost < 0) return;
         if (gameManager == null || !gameManager.SpendGold(cost)) return;
 
@@ -393,7 +426,6 @@ public abstract class TowerController : MonoBehaviour
     #endregion
 
     #region Subclass Contract Methods
-    // Subclasses MUST override these to define their unique math & weapon behavior
     protected virtual bool CanAutoFire(Vector2 toTarget) => true;
     protected abstract void FireWeapon(Vector2 aimDir, bool isManual);
     #endregion

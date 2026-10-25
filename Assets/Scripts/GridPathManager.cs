@@ -20,7 +20,6 @@ public class GridPathManager : MonoBehaviour
     #endregion
 
     #region State Variables
-    // Tracks which cells are currently occupied by the path or placed towers
     private HashSet<Vector2Int> pathCells = new HashSet<Vector2Int>();
     private Dictionary<Vector2Int, GameObject> towerCells = new Dictionary<Vector2Int, GameObject>();
 
@@ -93,7 +92,7 @@ public class GridPathManager : MonoBehaviour
         GameObject gridVisualContainer = new GameObject("GridLines_Container");
         gridVisualContainer.transform.SetParent(transform);
 
-        // Vertical lines
+        //vertical
         for (int x = 0; x <= gridWidth; x++)
         {
             Vector3 start = new Vector3(gridOrigin.x + x * cellSize, gridOrigin.y, 0.1f);
@@ -101,7 +100,7 @@ public class GridPathManager : MonoBehaviour
             CreateLine($"GridV_{x}", start, end, 0.02f, gridLineColor, gridVisualContainer.transform);
         }
 
-        // Horizontal lines
+        //horizontal
         for (int y = 0; y <= gridHeight; y++)
         {
             Vector3 start = new Vector3(gridOrigin.x, gridOrigin.y + y * cellSize, 0.1f);
@@ -112,7 +111,6 @@ public class GridPathManager : MonoBehaviour
 
     private void BuildNeonPathAndBlockTiles()
     {
-        // Guard Clause: Prevent errors if waypoints aren't set up yet
         if (waypoints == null || waypoints.Length < 2) return;
 
         DrawNeonPathLine();

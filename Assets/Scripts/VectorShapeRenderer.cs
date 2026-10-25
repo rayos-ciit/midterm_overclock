@@ -5,12 +5,12 @@ public class VectorShapeRenderer : MonoBehaviour
 {
     public enum ShapeType
     {
-        RegularPolygon, // 3 = Speed Saboteur (Triangle), 4 = Grunt (Diamond), 6 = Tank Saboteur (Hexagon), 40 = Circle/Ring
-        StealthChevron, // Assassin dart shape
-        TurretSniper,   // Circle base + long rail barrel
-        TurretShotgun,  // Octagon base + wide double barrel
-        TurretCryo,     // Emitter base + wide frost nozzle
-        FOVCone         // Draws the Cryo Cone area of effect
+        RegularPolygon,
+        StealthChevron, //assassin dart shape
+        TurretSniper,   //circle base + long rail barrel
+        TurretShotgun,  //octagon base + wide double barrel
+        TurretCryo,     //emitter base + wide frost nozzle
+        FOVCone         //draws the Cryo Cone area of effect
     }
 
     [Header("Shape Settings")]
@@ -19,8 +19,8 @@ public class VectorShapeRenderer : MonoBehaviour
     public float radius = 0.4f;
     public float lineWidth = 0.05f;
     public Color baseColor = Color.cyan;
-    [Range(1f, 3f)] public float glowMultiplier = 1.6f; // Drives URP Bloom glow
-    public float fovConeAngle = 45f; // Used when shapeType == FOVCone
+    [Range(1f, 3f)] public float glowMultiplier = 1.6f;
+    public float fovConeAngle = 45f;
 
     [Header("Math Animation Settings (Idle, Move, Attack)")]
     public bool animateIdlePulse = true;
@@ -56,7 +56,7 @@ public class VectorShapeRenderer : MonoBehaviour
 
     void Update()
     {
-        // 1. Frame-rate independent recoil recovery (from Frame-Rate Independent Lerp slide)
+        //recoil recovery from "Frame-Rate Independent Lerp slide"
         float t = 1f - Mathf.Pow(0.001f, Time.deltaTime);
         recoilOffset = Mathf.Lerp(recoilOffset, 0f, t);
 
@@ -67,10 +67,9 @@ public class VectorShapeRenderer : MonoBehaviour
             currentScale += Mathf.Sin(Time.time * pulseSpeed) * pulseAmount;
         }
 
-        // Apply slight recoil pushback along local -X (barrel axis)
         transform.localScale = new Vector3(currentScale - recoilOffset * 0.3f, currentScale + recoilOffset * 0.15f, 1f);
 
-        // 3. Hit Flash feedback recovery
+
         if (hitFlashTimer > 0f)
         {
             hitFlashTimer -= Time.deltaTime;
@@ -129,7 +128,6 @@ public class VectorShapeRenderer : MonoBehaviour
         }
     }
 
-    // Uses x = r * Cos(rad), y = r * Sin(rad) from your Week 1/Midterm slides
     private void DrawPolygon(int sides, float r)
     {
         lr.loop = true;
@@ -147,10 +145,10 @@ public class VectorShapeRenderer : MonoBehaviour
     {
         lr.loop = true;
         lr.positionCount = 4;
-        lr.SetPosition(0, new Vector3(r * 1.2f, 0f, 0f));       // Nose (+X forward)
-        lr.SetPosition(1, new Vector3(-r * 0.9f, r * 0.8f, 0f)); // Top wing
-        lr.SetPosition(2, new Vector3(-r * 0.4f, 0f, 0f));       // Inner notch
-        lr.SetPosition(3, new Vector3(-r * 0.9f, -r * 0.8f, 0f));// Bottom wing
+        lr.SetPosition(0, new Vector3(r * 1.2f, 0f, 0f));       //Nose (+X forward)
+        lr.SetPosition(1, new Vector3(-r * 0.9f, r * 0.8f, 0f)); //Top wing
+        lr.SetPosition(2, new Vector3(-r * 0.4f, 0f, 0f));       //Inner notch
+        lr.SetPosition(3, new Vector3(-r * 0.9f, -r * 0.8f, 0f));//Bottom wing
     }
 
     private void DrawTurretBarrel(float r, float barrelLength, float barrelWidth)
@@ -159,13 +157,12 @@ public class VectorShapeRenderer : MonoBehaviour
         int bodyPoints = 12;
         lr.positionCount = bodyPoints + 4;
 
-        // Draw circular turret base
+        //draw circular turret base
         for (int i = 0; i < bodyPoints; i++)
         {
             float rad = (i / (float)bodyPoints) * Mathf.PI * 2f;
             lr.SetPosition(i, new Vector3(Mathf.Cos(rad) * r, Mathf.Sin(rad) * r, 0f));
         }
-        // Extend barrel pointing right (+X)
         lr.SetPosition(bodyPoints,     new Vector3(r * 0.5f, barrelWidth, 0f));
         lr.SetPosition(bodyPoints + 1, new Vector3(barrelLength, barrelWidth, 0f));
         lr.SetPosition(bodyPoints + 2, new Vector3(barrelLength, -barrelWidth, 0f));
@@ -176,7 +173,6 @@ public class VectorShapeRenderer : MonoBehaviour
     {
         lr.loop = true;
         lr.positionCount = 8;
-        // Hexagonal core with flared nozzle
         lr.SetPosition(0, new Vector3(-r, r * 0.5f, 0f));
         lr.SetPosition(1, new Vector3(0f, r * 0.8f, 0f));
         lr.SetPosition(2, new Vector3(r * 1.2f, r * 0.9f, 0f));
@@ -191,7 +187,7 @@ public class VectorShapeRenderer : MonoBehaviour
     {
         lr.loop = true;
         lr.positionCount = arcSegments + 2;
-        lr.SetPosition(0, Vector3.zero); // Origin at turret center
+        lr.SetPosition(0, Vector3.zero);
 
         float halfAngle = angleDeg * 0.5f;
         for (int i = 0; i <= arcSegments; i++)
