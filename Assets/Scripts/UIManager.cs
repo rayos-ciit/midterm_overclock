@@ -74,7 +74,7 @@ public class UIManager : MonoBehaviour
     {
         GameConfigSO cfg = gameManager.config;
 
-        // 1. Base HP & Ghost Bar (Mathf.InverseLerp + Mathf.Lerp) // hp & ghostbar 
+        // hp & ghostbar 
         float targetHPFill = Mathf.InverseLerp(0f, gameManager.MaxBaseHP, gameManager.CurrentBaseHP);
         if (hpMainBarFill != null) hpMainBarFill.fillAmount = targetHPFill;
 
@@ -82,27 +82,26 @@ public class UIManager : MonoBehaviour
         if (hpGhostBarFill != null) hpGhostBarFill.fillAmount = displayedGhostHPFill;
         if (hpText != null) hpText.text = $"HP: {Mathf.CeilToInt(gameManager.CurrentBaseHP)}/{gameManager.MaxBaseHP}";
 
-        // 2. Gold Counter
+        //gold Counter
         displayedGold = Mathf.Lerp(displayedGold, gameManager.CurrentGold, cfg.goldTextLerpSpeed * Time.deltaTime);
         if (goldText != null) goldText.text = $"Gold: {Mathf.RoundToInt(displayedGold)}g";
 
-        // 3. EXP Bar
+        //exp bar
         float targetXPFill = Mathf.InverseLerp(0f, gameManager.XPToNextLevel, gameManager.CurrentXP);
         displayedXPFill = Mathf.Lerp(displayedXPFill, targetXPFill, cfg.expBarLerpSpeed * Time.deltaTime);
         if (expBarFill != null) expBarFill.fillAmount = displayedXPFill;
         if (expLevelText != null) expLevelText.text = $"LVL {gameManager.CurrentLevel}";
 
-        // 4. Wave Counter
+        //wave counter
         int totalWaves = cfg.waves != null ? cfg.waves.Length : 10;
         if (waveText != null) waveText.text = $"Wave: {Mathf.Min(gameManager.CurrentWaveIndex + 1, totalWaves)}/{totalWaves}";
     }
 
     private void UpdateBottomHUDStatus()
     {
-        // Guard Clause
+
         if (buildController == null) return;
 
-        // Update Build Buttons & Sabotage Locks
         for (int i = 0; i < 3; i++)
         {
             if (i >= buildButtonLabels.Length || buildButtonLabels[i] == null) continue;
@@ -122,7 +121,6 @@ public class UIManager : MonoBehaviour
             }
         }
 
-        // Update Overclock Status
         if (overclockStatusText != null)
         {
             TowerController oc = TowerController.CurrentlyOverclockedTower;
