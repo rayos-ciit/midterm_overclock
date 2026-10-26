@@ -33,7 +33,8 @@ public class UIManager : MonoBehaviour
     [Header("Bottom HUD Elements")]
     [SerializeField] private Button[] buildButtons = new Button[3];
     [SerializeField] private TMP_Text[] buildButtonLabels = new TMP_Text[3];
-    [SerializeField] private TMP_Text overclockStatusText;
+    [SerializeField] private TMP_Text overclockStatusText; 
+    [SerializeField] private TMP_Text infoText;
     #endregion
 
     #region State Variables
@@ -70,7 +71,7 @@ public class UIManager : MonoBehaviour
     {
         GameConfigSO cfg = gameManager.config;
 
-        // hp & ghostbar 
+        //hp & ghostbar 
         float targetHPFill = Mathf.InverseLerp(0f, gameManager.MaxBaseHP, gameManager.CurrentBaseHP);
         if (hpMainBarFill != null) hpMainBarFill.fillAmount = targetHPFill;
 
@@ -103,9 +104,8 @@ public class UIManager : MonoBehaviour
 
     private void UpdateBottomHUDStatus()
     {
-
         if (buildController == null) return;
-
+        
         for (int i = 0; i < 3; i++)
         {
             if (i >= buildButtonLabels.Length || buildButtonLabels[i] == null) continue;
@@ -125,22 +125,50 @@ public class UIManager : MonoBehaviour
             }
         }
 
-        if (overclockStatusText != null)
+        TowerController oc = TowerController.CurrentlyOverclockedTower;
+        TowerController hovered = TowerController.CurrentlyHoveredTower;
+
+        if (infoText != null)
         {
-            TowerController oc = TowerController.CurrentlyOverclockedTower;
-            if (oc != null)
+            if (hovered != null)
             {
-                int upgCost = oc.GetNextUpgradeCost();
+                int upgCost = hovered.GetNextUpgradeCost();
                 string upgStr = upgCost > 0 ? $"[U] Upgrade ({upgCost}g)" : "MAX LVL";
-                
-                int heatPercent = Mathf.RoundToInt((oc.currentHeat / oc.maxHeat) * 100f);
-                string heatStr = $"HEAT: {heatPercent}%";
-                
-                overclockStatusText.text = $"OVERCLOCKED (Lvl {oc.level}) | {heatStr} | {upgStr} | [X] Sell (+{oc.GetSellRefundGold()}g) | [R / Right-Click] Auto";
+                infoText.text = $"HOVERING: {hovered.towerData.towerName} (Lvl {hovered.level}) | {upgStr} | [X] Sell (+{hovered.GetSellRefundGold()}g)";
+                infoText.gameObject.SetActive(true);
             }
             else
             {
-                overclockStatusText.text = "Left-Click any placed turret to OVERCLOCK (+25% Fire Rate, 2x Saboteur Dmg, Hits Assassins)";
+                infoText.gameObject.SetActive(false);
+            }
+        }
+
+
+        if (overclockStatusText != null)
+        {
+            if (oc != null)
+            {
+  
+                int heatPercent = Mathf.RoundToInt((oc.currentHeat / oc.maxHeat) * 100f);
+                overclockStatusText.text = $"OVERCLOCKED (Lvl {oc.level}) | HEAT: {heatPercent}% | [R / Right-Click] Auto";
+                overclockStatusText.color = new Color(1f, 0.4f, 0.4f); // Make it angry red!
+            }
+            else if (hovered != null && !hovered.isOverheated)
+            {
+                //we are hovering a valid turret, tell them they can click it!
+                overclockStatusText.text = "Left-Click to OVERCLOCK (+25% Fire Rate, 2x Saboteur Dmg, Hits Assassins)";
+                overclockStatusText.color = Color.white;
+            }
+            else if (hovered != null && hovered.isOverheated)
+            {
+                //hovering over a heated turret!
+                overclockStatusText.text = "OVERHEATED - Cannot Overclock!";
+                overclockStatusText.color = Color.red;
+            }
+            else
+            {
+                //not hovering, not overclocking.
+                overclockStatusText.text = ""; 
             }
         }
     }

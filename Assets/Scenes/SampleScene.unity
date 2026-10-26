@@ -157,7 +157,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Overclock.. Loading..
+  m_text: Overclock Initiating..
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 93823bc60d6625f4287f96baf3426f9d, type: 2}
   m_sharedMaterial: {fileID: -7423650911060040972, guid: 93823bc60d6625f4287f96baf3426f9d, type: 2}
@@ -1956,6 +1956,7 @@ MonoBehaviour:
   - {fileID: 904991716}
   - {fileID: 320001557}
   overclockStatusText: {fileID: 151204}
+  infoText: {fileID: 0}
 --- !u!114 &1030544634
 MonoBehaviour:
   m_ObjectHideFlags: 0

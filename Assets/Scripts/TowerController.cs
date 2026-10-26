@@ -45,7 +45,7 @@ public abstract class TowerController : MonoBehaviour
     public float heatBuildupRate = 1f;
     public float heatCoolDownRate = 2f;
     public float overheatPenaltyDuration = 4f;
-    private bool isOverheated = false;
+    public bool isOverheated = false;
     #endregion
 
     #region Properties
