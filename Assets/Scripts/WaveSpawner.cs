@@ -12,13 +12,14 @@ public class WaveSpawner : MonoBehaviour
 
     #region State Variables
     public int CurrentWaveIndex { get; private set; } = 0;
+    public bool IsPrepPhase { get; private set; } = false;
+    public float CurrentPrepTimer { get; private set; } = 0f;
     private bool isWaveSpawning = false;
     #endregion
 
     #region Unity Lifecycle
     private void Update()
     {
-        // Guard Clauses
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsPaused) return;
         if (isWaveSpawning) return;
 
@@ -29,7 +30,6 @@ public class WaveSpawner : MonoBehaviour
     #region Spawning Logic
     private void CheckWaveCompletion()
     {
-        // Advance wave when all enemies in the current wave are eliminated
         if (EnemyController.ActiveEnemies.Count > 0) return;
 
         CurrentWaveIndex++;
@@ -56,13 +56,12 @@ public class WaveSpawner : MonoBehaviour
     {
         StopAllCoroutines();
         isWaveSpawning = false;
+        IsPrepPhase = false;
     }
 
     private void StartNextWave()
     {
         WaveConfig[] waves = gameManager.config.waves;
-        
-        // Guard Clause
         if (CurrentWaveIndex >= waves.Length) return;
         
         StartCoroutine(SpawnWaveCoroutine(waves[CurrentWaveIndex], CurrentWaveIndex + 1));
@@ -71,26 +70,31 @@ public class WaveSpawner : MonoBehaviour
     private IEnumerator SpawnWaveCoroutine(WaveConfig cfg, int waveNumber)
     {
         isWaveSpawning = true;
+        IsPrepPhase = true;
+        CurrentPrepTimer = gameManager.config.wavePrepTime;
+
+        while (CurrentPrepTimer > 0f)
+        {
+            if (gameManager != null && gameManager.IsGameActive && !gameManager.IsPaused)
+            {
+                CurrentPrepTimer -= Time.deltaTime;
+            }
+            yield return null;
+        }
+        IsPrepPhase = false;
+
         int gruntsLeft = cfg.grunts;
         int saboteursLeft = cfg.saboteurs;
         int assassinsLeft = cfg.assassins;
         int totalToSpawn = gruntsLeft + saboteursLeft + assassinsLeft;
 
-        // Brief breather before the wave actually starts
-        yield return new WaitForSeconds(2.0f);
-
         for (int i = 0; i < totalToSpawn; i++)
         {
-            // Pause spawning if the game state changes (e.g., player dies mid-wave)
-            while (gameManager != null && !gameManager.IsGameActive)
-            {
-                yield return null;
-            }
+            while (gameManager != null && !gameManager.IsGameActive) yield return null;
 
             EnemyKind kindToSpawn = PickNextEnemyToSpawn(ref gruntsLeft, ref saboteursLeft, ref assassinsLeft);
-            EnemyDataSO enemyData = EnemyDataSO.CreateDefault(kindToSpawn); // Factory fetches the stats
+            EnemyDataSO enemyData = EnemyDataSO.CreateDefault(kindToSpawn);
             
-            // Pass the dependencies down safely (Strict DI)
             Vector3 spawnPos = gridManager.waypoints[0].position;
             EnemyController.SpawnEnemy(enemyData, waveNumber, spawnPos, gameManager, gridManager, buildController);
 
@@ -104,22 +108,9 @@ public class WaveSpawner : MonoBehaviour
     {
         int total = g + s + a;
         int roll = Random.Range(0, total);
-        
-        if (roll < g)
-        {
-            g--;
-            return EnemyKind.Grunt;
-        }
-        
-        if (roll < g + s)
-        {
-            s--;
-            // TDD Rule: 50/50 mutually exclusive roll between Speed Saboteur and Tank Saboteur
-            return (Random.value < 0.5f) ? EnemyKind.SpeedSaboteur : EnemyKind.TankSaboteur;
-        }
-        
-        a--;
-        return EnemyKind.Assassin;
+        if (roll < g) { g--; return EnemyKind.Grunt; }
+        if (roll < g + s) { s--; return (Random.value < 0.5f) ? EnemyKind.SpeedSaboteur : EnemyKind.TankSaboteur; }
+        a--; return EnemyKind.Assassin;
     }
     #endregion
 }

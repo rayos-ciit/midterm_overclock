@@ -33,7 +33,6 @@ public class EnemySabotageBehavior : MonoBehaviour
     #region Unity Lifecycle
     private void Update()
     {
-        // Guard Clause
         if (coreEnemy == null) return;
 
         if (isLatched)
@@ -52,12 +51,10 @@ public class EnemySabotageBehavior : MonoBehaviour
     {
         empShootTimer -= Time.deltaTime;
         
-        // Guard Clause
         if (empShootTimer > 0f) return;
 
         TowerController nearestTower = FindNearestTower(3.5f);
         
-        // Guard Clause
         if (nearestTower == null) return;
 
         empShootTimer = 2.5f;
@@ -90,7 +87,6 @@ public class EnemySabotageBehavior : MonoBehaviour
         
         worldBars.EnableLatchVisuals(true);
 
-        // Fan out around base core
         float offsetAngle = Random.Range(0f, Mathf.PI * 2f);
         transform.position += new Vector3(Mathf.Cos(offsetAngle) * 0.45f, Mathf.Sin(offsetAngle) * 0.45f, 0f);
 
@@ -117,15 +113,14 @@ public class EnemySabotageBehavior : MonoBehaviour
     {
         latchTimer += Time.deltaTime;
         
-        // Pick new target if previous one was sold/destroyed
+        //picks new target when sabo evenutally destorys the previous tower
         if (coreEnemy.IsSaboteur && targetedTurret == null && TowerController.ActiveTowers.Count > 0)
         {
             PickRandomTurretToSabotage();
         }
 
         UpdateVisuals();
-
-        // Check if progress bar is full
+        
         if (latchTimer >= enemyData.stats.latchDuration)
         {
             ExecuteSabotageAndExplode();

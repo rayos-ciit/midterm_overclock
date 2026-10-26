@@ -7,9 +7,9 @@ public struct TowerLevelStats
     public float damage;
     public float fireRate;
     public float range;
-    public int shotgunPellets;   // Used by Flak Shotgun
-    public float cryoConeAngle;  // Used by Cryo Cone
-    public float cryoSlowAmount; // Used by Cryo Cone (0.30 = 30% slow)
+    public int shotgunPellets;   // for shotgun
+    public float cryoConeAngle;  // for cryocone angle
+    public float cryoSlowAmount; // for cryocone slow
 }
 
 [CreateAssetMenu(fileName = "TowerData", menuName = "Overclock/Tower Data")]
@@ -20,12 +20,12 @@ public class TowerDataSO : ScriptableObject
     public Color baseColor = Color.cyan;
     public TowerLevelStats[] levels = new TowerLevelStats[3];
 
-    // Automatically populates exact TDD values if no ScriptableObject asset is assigned
+    //fallback
     public static TowerDataSO CreateDefaultData(int typeIndex)
     {
         TowerDataSO data = CreateInstance<TowerDataSO>();
 
-        if (typeIndex == 0) // 1. Rail Sniper
+        if (typeIndex == 0) //rail sniper name,type,color and levels with their stat changes
         {
             data.towerName = "Rail Sniper";
             data.shapeType = VectorShapeRenderer.ShapeType.TurretSniper;
@@ -37,7 +37,7 @@ public class TowerDataSO : ScriptableObject
                 new TowerLevelStats { cost = 120, damage = 120f, fireRate = 1.25f, range = 10.0f }
             };
         }
-        else if (typeIndex == 1) // 2. Flak Shotgun
+        else if (typeIndex == 1) //flak shotgun name,type,color and levels with their stat changes
         {
             data.towerName = "Flak Shotgun";
             data.shapeType = VectorShapeRenderer.ShapeType.TurretShotgun;
@@ -49,7 +49,7 @@ public class TowerDataSO : ScriptableObject
                 new TowerLevelStats { cost = 140, damage = 22f, fireRate = 1.5f, range = 4.5f, shotgunPellets = 5 }
             };
         }
-        else // 3. Cryo Cone
+        else //cyrocone name,type,color and levels with their stat changes
         {
             data.towerName = "Cryo Cone";
             data.shapeType = VectorShapeRenderer.ShapeType.TurretCryo;

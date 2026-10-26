@@ -17,9 +17,10 @@ MonoBehaviour:
   baseXPToLevel: 100
   xpPerGoldEarned: 1.2
   ghostBarLerpSpeed: 3.5
-  expBarLerpSpeed: 5
   goldTextLerpSpeed: 10
+  expBarLerpSpeed: 5
   coinFlyLerpSpeed: 6.5
+  wavePrepTime: 10
   waves:
   - grunts: 6
     saboteurs: 0

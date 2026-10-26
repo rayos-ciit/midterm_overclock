@@ -5,7 +5,7 @@ public class RailSniperTower : TowerController
     #region Combat Overrides
     protected override bool CanAutoFire(Vector2 toTarget)
     {
-        Vector2 barrel = transform.right;
+        Vector2 barrel = turretShape.transform.right; 
         float dot = Vector2.Dot(barrel.normalized, toTarget.normalized);
         return dot >= 0.98f;
     }
@@ -15,7 +15,7 @@ public class RailSniperTower : TowerController
         int pierceCount = (level >= 3) ? 2 : 1;
 
         ProjectileController.SpawnPlayerProjectile(
-            startPos: transform.position + (Vector3)(aimDir * 0.45f),
+            startPos: turretShape.transform.position + (Vector3)(aimDir * 0.45f),
             dir: aimDir,
             speed: 18f,
             maxRange: range,
@@ -24,7 +24,7 @@ public class RailSniperTower : TowerController
             pierce: pierceCount,
             knockbackClose: false,
             col: new Color(0.2f, 1f, 1f),
-            towerOrigin: transform.position
+            towerOrigin: turretShape.transform.position
         );
     }
     #endregion

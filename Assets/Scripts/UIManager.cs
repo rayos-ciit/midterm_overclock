@@ -28,8 +28,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text goldText;
     [SerializeField] private RectTransform goldHUDTargetRect;
     [SerializeField] private TMP_Text waveText;
-    [SerializeField] private TMP_Text expLevelText;
-    [SerializeField] private Image expBarFill;
+    [SerializeField] private TMP_Text wavePrepTimerText;
 
     [Header("Bottom HUD Elements")]
     [SerializeField] private Button[] buildButtons = new Button[3];
@@ -39,7 +38,6 @@ public class UIManager : MonoBehaviour
 
     #region State Variables
     private float displayedGold;
-    private float displayedXPFill = 0f;
     private float displayedGhostHPFill = 1f;
     #endregion
 
@@ -53,10 +51,8 @@ public class UIManager : MonoBehaviour
     {
         displayedGold = startingGold;
         displayedGhostHPFill = 1f;
-        displayedXPFill = 0f;
     }
 
-    public void ResetXPBarDisplayOnLevelUp() => displayedXPFill = 0f;
     #endregion
 
     #region Unity Lifecycle
@@ -80,21 +76,29 @@ public class UIManager : MonoBehaviour
 
         displayedGhostHPFill = Mathf.Lerp(displayedGhostHPFill, targetHPFill, cfg.ghostBarLerpSpeed * Time.deltaTime);
         if (hpGhostBarFill != null) hpGhostBarFill.fillAmount = displayedGhostHPFill;
-        if (hpText != null) hpText.text = $"HP: {Mathf.CeilToInt(gameManager.CurrentBaseHP)}/{gameManager.MaxBaseHP}";
+        if (hpText != null) hpText.text = $"{Mathf.CeilToInt(gameManager.CurrentBaseHP)}/{gameManager.MaxBaseHP}";
 
         //gold Counter
         displayedGold = Mathf.Lerp(displayedGold, gameManager.CurrentGold, cfg.goldTextLerpSpeed * Time.deltaTime);
         if (goldText != null) goldText.text = $"Gold: {Mathf.RoundToInt(displayedGold)}g";
 
-        //exp bar
-        float targetXPFill = Mathf.InverseLerp(0f, gameManager.XPToNextLevel, gameManager.CurrentXP);
-        displayedXPFill = Mathf.Lerp(displayedXPFill, targetXPFill, cfg.expBarLerpSpeed * Time.deltaTime);
-        if (expBarFill != null) expBarFill.fillAmount = displayedXPFill;
-        if (expLevelText != null) expLevelText.text = $"LVL {gameManager.CurrentLevel}";
-
         //wave counter
         int totalWaves = cfg.waves != null ? cfg.waves.Length : 10;
         if (waveText != null) waveText.text = $"Wave: {Mathf.Min(gameManager.CurrentWaveIndex + 1, totalWaves)}/{totalWaves}";
+
+        //wave timer
+        if (wavePrepTimerText != null)
+        {
+            if (gameManager.IsPrepPhase)
+            {
+                wavePrepTimerText.gameObject.SetActive(true);
+                wavePrepTimerText.text = $"NEXT WAVE IN: {Mathf.CeilToInt(gameManager.PrepTimer)}s";
+            }
+            else
+            {
+                wavePrepTimerText.gameObject.SetActive(false);
+            }
+        }
     }
 
     private void UpdateBottomHUDStatus()

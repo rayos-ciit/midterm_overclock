@@ -63,7 +63,6 @@ public class EnemyController : MonoBehaviour
     {
         EnemyData = data;
         
-        // TDD Math Scaling
         float hpMult = 1f + 0.22f * (waveNumber - 1);
         float spdMult = 1f + 0.04f * (waveNumber - 1);
         int bonusGold = Mathf.FloorToInt(1.5f * (waveNumber - 1));
@@ -105,7 +104,6 @@ public class EnemyController : MonoBehaviour
         
         worldBars.UpdateHPBar(currentHP, maxHP);
 
-        // Guard Clause: Let SabotageBehavior take over if latched
         if (isLatchedToBase) return;
         
         HandleWaypointMovement();
@@ -113,9 +111,21 @@ public class EnemyController : MonoBehaviour
     #endregion
 
     #region Movement & Navigation
+    
+    public float GetPathProgress()
+    {
+        if (isLatchedToBase) return 999999f; 
+        if (gridManager == null || gridManager.waypoints == null) return 0f;
+        if (currentWaypointIndex >= gridManager.waypoints.Length) return 999999f;
+
+        Vector2 targetPos = gridManager.waypoints[currentWaypointIndex].position;
+        float sqrDistToNext = (targetPos - (Vector2)transform.position).sqrMagnitude;
+        
+        return (currentWaypointIndex * 1000f) - sqrDistToNext;
+    }
+
     private void HandleWaypointMovement()
     {
-        // Guard Clauses
         if (gridManager == null || gridManager.waypoints == null) return;
         if (currentWaypointIndex >= gridManager.waypoints.Length) return;
 
@@ -136,13 +146,13 @@ public class EnemyController : MonoBehaviour
             MoveAndRotate(direction.normalized);
         }
     }
-
+    
     private void MoveAndRotate(Vector2 moveDir)
     {
         float currentSpeed = baseSpeed * slowMultiplier;
         transform.position += (Vector3)(moveDir * currentSpeed * Time.deltaTime);
 
-        // Mathf.Atan2 + Mathf.Sin Wobble
+        //Mathf.Atan2 + Mathf.Sin
         float baseAngle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
         float walkWobble = Mathf.Sin(Time.time * currentSpeed * 4f) * 6f;
         transform.rotation = Quaternion.Euler(0f, 0f, baseAngle + walkWobble);
@@ -157,13 +167,13 @@ public class EnemyController : MonoBehaviour
             return;
         }
 
-        // Trigger Sabotage Component
         isLatchedToBase = true;
         if (sabotageBehavior != null)
         {
             sabotageBehavior.StartBaseLatch();
         }
     }
+
     #endregion
 
     #region Combat & Health
@@ -189,7 +199,6 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(float rawDamage, bool isFromManualOverclock)
     {
-        // Guard Clause: Assassins only take damage from Manual control
         if (IsAssassin && !isFromManualOverclock) return;
 
         float finalDamage = rawDamage;
@@ -209,7 +218,6 @@ public class EnemyController : MonoBehaviour
 
     public void PushBackwardAlongPath(float distance)
     {
-        // Guard Clauses
         if (isLatchedToBase) return;
         if (gridManager == null || currentWaypointIndex <= 0) return;
         if (currentWaypointIndex >= gridManager.waypoints.Length) return;
@@ -229,7 +237,6 @@ public class EnemyController : MonoBehaviour
             ? gameManager.GetGoldHUDWorldPos() 
             : new Vector3(0f, 5.2f, 0f);
             
-        // Pass the gameManager dependency into the coin!
         CoinPickupEffect.SpawnCoin(transform.position, goldReward, coinTarget, gameManager);
 
         Destroy(gameObject);

@@ -7,6 +7,7 @@ public abstract class TowerController : MonoBehaviour
     #region Static Tracking
     public static readonly List<TowerController> ActiveTowers = new List<TowerController>();
     public static TowerController CurrentlyOverclockedTower { get; private set; }
+    public static TowerController CurrentlyHoveredTower { get; private set; }
     #endregion
 
     #region Injected Dependencies
@@ -146,6 +147,8 @@ public abstract class TowerController : MonoBehaviour
     {
         UpdateDebuffTimers();
 
+        CheckForMouseHover(); //for hovering over turrets
+
         if (IsDisabled) return; 
 
         if (fireCooldown > 0f) 
@@ -232,14 +235,6 @@ public abstract class TowerController : MonoBehaviour
             return; 
         }
 
-        if (Input.GetKeyDown(KeyCode.U)) TryUpgradeTower();
-        
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            SellTower();
-            return; 
-        }
-
         currentHeat += heatBuildupRate * Time.deltaTime;
         
         if (currentHeat >= maxHeat)
@@ -247,7 +242,7 @@ public abstract class TowerController : MonoBehaviour
             isOverheated = true;
             DisableTowerFromSaboteur(overheatPenaltyDuration);
             ReleaseOverclock();
-            //TODO: Play a "hiss" or "power down" sound here!
+            //TODO: Play a "hiss" or "power down" sound here!!!
             return;
         }
 
@@ -296,12 +291,14 @@ public abstract class TowerController : MonoBehaviour
     {
         if (IsOverclocked)
         {
+            // Fully visible when overclocked!
             rangeRingShape.ApplyColor(new Color(1f, 0.25f, 0.8f, 0.85f));
             turretShape.ApplyColor(new Color(1f, 0.4f, 0.9f, 1f));
         }
         else
         {
-            rangeRingShape.ApplyColor(new Color(turretShape.baseColor.r, turretShape.baseColor.g, turretShape.baseColor.b, 0.15f));
+            // INVISIBLE when autonomous! (Alpha set to 0f)
+            rangeRingShape.ApplyColor(new Color(turretShape.baseColor.r, turretShape.baseColor.g, turretShape.baseColor.b, 0f));
             turretShape.ApplyColor(turretShape.baseColor);
         }
     }
@@ -310,7 +307,7 @@ public abstract class TowerController : MonoBehaviour
     #region Autonomous Combat
     private void HandleAutonomousControl()
     {
-        EnemyController target = FindClosestAutoTarget();
+        EnemyController target = FindFirstAutoTarget();
         
         if (target == null) return;
 
@@ -339,23 +336,28 @@ public abstract class TowerController : MonoBehaviour
         ResetFireCooldown(isManual);
     }
 
-    protected EnemyController FindClosestAutoTarget()
+    protected EnemyController FindFirstAutoTarget()
     {
-        EnemyController closest = null;
-        float bestSqr = range * range;
+        EnemyController bestTarget = null;
+        float bestProgress = -float.MaxValue;
 
         foreach (EnemyController enemy in EnemyController.ActiveEnemies)
         {
             if (enemy == null || enemy.IsAssassin) continue;
 
-            float sqrDist = ((Vector2)enemy.transform.position - (Vector2)transform.position).sqrMagnitude;
-            if (sqrDist <= bestSqr)
+            float sqrDistToTurret = ((Vector2)enemy.transform.position - (Vector2)transform.position).sqrMagnitude;
+            if (sqrDistToTurret <= range * range)
             {
-                bestSqr = sqrDist;
-                closest = enemy;
+
+                float progress = enemy.GetPathProgress();
+                if (progress > bestProgress)
+                {
+                    bestProgress = progress;
+                    bestTarget = enemy;
+                }
             }
         }
-        return closest;
+        return bestTarget;
     }
 
     private void ResetFireCooldown(bool isManual)
@@ -422,6 +424,29 @@ public abstract class TowerController : MonoBehaviour
         
         ReleaseOverclock();
         Destroy(gameObject);
+    }
+
+    private void CheckForMouseHover()
+    {
+        Vector2 mouseWorld = mainCam.ScreenToWorldPoint(Input.mousePosition);
+        float sqrDist = (mouseWorld - (Vector2)transform.position).sqrMagnitude;
+
+        // If mouse is near THIS turret
+        if (sqrDist <= 0.48f * 0.48f)
+        {
+            if (CurrentlyHoveredTower != this)
+            {
+                CurrentlyHoveredTower = this;
+            }
+            
+            if (Input.GetKeyDown(KeyCode.U)) TryUpgradeTower();
+            if (Input.GetKeyDown(KeyCode.X)) SellTower();
+        }
+        else if (CurrentlyHoveredTower == this)
+        {
+            // Mouse left this turret
+            CurrentlyHoveredTower = null;
+        }
     }
     #endregion
 

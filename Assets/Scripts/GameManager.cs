@@ -19,9 +19,8 @@ public class GameManager : MonoBehaviour
     public float MaxBaseHP => config.maxBaseHP;
     public float CurrentBaseHP { get; private set; }
     public int CurrentGold { get; private set; }
-    public int CurrentLevel { get; private set; } = 1;
-    public float CurrentXP { get; private set; } = 0f;
-    public float XPToNextLevel { get; private set; } = 100f;
+    public bool IsPrepPhase => waveSpawner != null && waveSpawner.IsPrepPhase;
+    public float PrepTimer => waveSpawner != null ? waveSpawner.CurrentPrepTimer : 0f;
     
     public bool IsGameActive { get; private set; } = false;
     public bool IsPaused { get; private set; } = false;
@@ -59,8 +58,6 @@ public class GameManager : MonoBehaviour
     public void AddGold(int amount)
     {
         CurrentGold += amount;
-        AddXP(amount * config.xpPerGoldEarned);
-        
         if (audioManager != null) audioManager.PlayUIClick(0.4f);
     }
 
@@ -72,20 +69,6 @@ public class GameManager : MonoBehaviour
         if (audioManager != null) audioManager.PlayUIClick(0.6f);
         
         return true;
-    }
-
-    public void AddXP(float xp)
-    {
-        CurrentXP += xp;
-        
-        if (CurrentXP >= XPToNextLevel)
-        {
-            CurrentXP -= XPToNextLevel;
-            CurrentLevel++;
-            XPToNextLevel = Mathf.Round(XPToNextLevel * 1.25f);
-            
-            if (uiManager != null) uiManager.ResetXPBarDisplayOnLevelUp();
-        }
     }
 
     public void DamageBase(int dmg)
@@ -123,9 +106,6 @@ public class GameManager : MonoBehaviour
 
         CurrentBaseHP = config.maxBaseHP;
         CurrentGold = config.startingGold;
-        CurrentLevel = 1;
-        CurrentXP = 0f;
-        XPToNextLevel = config.baseXPToLevel;
 
         IsGameActive = true;
         IsPaused = false;
