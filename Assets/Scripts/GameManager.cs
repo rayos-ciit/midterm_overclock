@@ -171,21 +171,9 @@ public class GameManager : MonoBehaviour
     public void CloseSettingsButton()
     {
         if (audioManager != null) audioManager.PlayUIClick();
-        
-        // Return to the correct panel depending on the game state
-        if (uiManager != null)
-        {
-            if (IsGameActive)
-            {
-                uiManager.SetPausePanelActive(true); 
-            }
-            else
-            {
-                uiManager.ShowTitlePanel();
-            }
-        }
+        if (uiManager != null) uiManager.HideSettingsPanel();
     }
-    
+
     #endregion
 
     #region Utility
