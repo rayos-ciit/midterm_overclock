@@ -79,9 +79,9 @@ public class UIManager : MonoBehaviour
         if (hpGhostBarFill != null) hpGhostBarFill.fillAmount = displayedGhostHPFill;
         if (hpText != null) hpText.text = $"{Mathf.CeilToInt(gameManager.CurrentBaseHP)}/{gameManager.MaxBaseHP}";
 
-        //gold Counter
+        //scrap Counter
         displayedGold = Mathf.Lerp(displayedGold, gameManager.CurrentGold, cfg.goldTextLerpSpeed * Time.deltaTime);
-        if (goldText != null) goldText.text = $"Gold: {Mathf.RoundToInt(displayedGold)}g";
+        if (goldText != null) goldText.text = $"Scrap: {Mathf.RoundToInt(displayedGold)}";
 
         //wave counter
         int totalWaves = cfg.waves != null ? cfg.waves.Length : 10;
@@ -105,7 +105,7 @@ public class UIManager : MonoBehaviour
     private void UpdateBottomHUDStatus()
     {
         if (buildController == null) return;
-        
+
         for (int i = 0; i < 3; i++)
         {
             if (i >= buildButtonLabels.Length || buildButtonLabels[i] == null) continue;
