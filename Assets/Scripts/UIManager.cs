@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject pauseScreenPanel;
     [SerializeField] private GameObject winScreenPanel;
     [SerializeField] private GameObject gameOverScreenPanel;
+    [SerializeField] private GameObject settingsScreenPanel;
     #endregion
 
     #region HUD Element References
@@ -203,6 +204,7 @@ public class UIManager : MonoBehaviour
     public void ShowGameplayHUDPanel() => SetActivePanel(gameplayHUDPanel);
     public void ShowWinPanel() => SetActivePanel(winScreenPanel);
     public void ShowGameOverPanel() => SetActivePanel(gameOverScreenPanel);
+    public void ShowSettingsPanel() => SetActivePanel(settingsScreenPanel);
     
     public void SetPausePanelActive(bool paused)
     {
@@ -216,6 +218,7 @@ public class UIManager : MonoBehaviour
         if (pauseScreenPanel != null)    pauseScreenPanel.SetActive(activePanel == pauseScreenPanel);
         if (winScreenPanel != null)      winScreenPanel.SetActive(activePanel == winScreenPanel);
         if (gameOverScreenPanel != null) gameOverScreenPanel.SetActive(activePanel == gameOverScreenPanel);
+        if (settingsScreenPanel != null) settingsScreenPanel.SetActive(activePanel == settingsScreenPanel);
     }
     #endregion
 }

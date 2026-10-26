@@ -161,6 +161,31 @@ public class GameManager : MonoBehaviour
         if (audioManager != null) audioManager.PlayLose();
         if (uiManager != null) uiManager.ShowGameOverPanel();
     }
+
+    public void OpenSettingsButton()
+    {
+        if (audioManager != null) audioManager.PlayUIClick();
+        if (uiManager != null) uiManager.ShowSettingsPanel();
+    }
+
+    public void CloseSettingsButton()
+    {
+        if (audioManager != null) audioManager.PlayUIClick();
+        
+        // Return to the correct panel depending on the game state
+        if (uiManager != null)
+        {
+            if (IsGameActive)
+            {
+                uiManager.SetPausePanelActive(true); 
+            }
+            else
+            {
+                uiManager.ShowTitlePanel();
+            }
+        }
+    }
+    
     #endregion
 
     #region Utility
