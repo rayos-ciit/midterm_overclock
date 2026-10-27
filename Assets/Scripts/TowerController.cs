@@ -242,7 +242,7 @@ public abstract class TowerController : MonoBehaviour
             isOverheated = true;
             DisableTowerFromSaboteur(overheatPenaltyDuration);
             ReleaseOverclock();
-            //TODO: Play a "hiss" or "power down" sound here!!!
+            if (audioManager != null) audioManager.PlayOverheat();
             return;
         }
 
@@ -276,6 +276,8 @@ public abstract class TowerController : MonoBehaviour
         }
         
         UpdateRangeRingVisibility();
+
+        if (audioManager != null) audioManager.PlayOverclock();
     }
 
     public void ReleaseOverclock()

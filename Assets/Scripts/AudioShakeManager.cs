@@ -9,13 +9,26 @@ public class AudioShakeManager : MonoBehaviour
     [SerializeField] private Slider volumeSlider;
     [SerializeField] private Toggle muteToggle;
 
-    [Header("Optional Audio Clips (Auto-Synths if Left Empty!)")]
+    [Header("Audio Clips")]
     [SerializeField] private AudioClip shootClip;
     [SerializeField] private AudioClip enemyDeathClip;
     [SerializeField] private AudioClip baseDamageClip;
     [SerializeField] private AudioClip uiClickClip;
     [SerializeField] private AudioClip winClip;
     [SerializeField] private AudioClip loseClip;
+    [SerializeField] private AudioClip overclockClip;
+    [SerializeField] private AudioClip overheatClip;
+
+    [Header("Audio Clips Volume")]
+    [Range(0f, 1f)] [SerializeField] private float shootVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float enemyDeathVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float baseDamageVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float uiClickVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float winVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float loseVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float overclockVolume = 0.8f;
+    [Range(0f, 1f)] [SerializeField] private float overheatVolume = 0.8f;
+
     #endregion
 
     #region State Variables
@@ -96,12 +109,14 @@ public class AudioShakeManager : MonoBehaviour
     public void SetVolume(float val) => AudioListener.volume = Mathf.Clamp01(val);
     public void SetMute(bool muted) => AudioListener.pause = muted;
 
-    public void PlayShoot() => PlaySFX(shootClip, 0.35f);
-    public void PlayEnemyDeath() => PlaySFX(enemyDeathClip, 0.6f);
-    public void PlayBaseDamage() => PlaySFX(baseDamageClip, 0.9f);
-    public void PlayUIClick(float vol = 0.7f) => PlaySFX(uiClickClip, vol);
-    public void PlayWin() => PlaySFX(winClip, 1f);
-    public void PlayLose() => PlaySFX(loseClip, 1f);
+    public void PlayShoot() => PlaySFX(shootClip, shootVolume);
+    public void PlayEnemyDeath() => PlaySFX(enemyDeathClip, enemyDeathVolume);
+    public void PlayBaseDamage() => PlaySFX(baseDamageClip, baseDamageVolume);
+    public void PlayUIClick(float vol = -1f) => PlaySFX(uiClickClip, vol >= 0f ? vol : uiClickVolume);
+    public void PlayWin() => PlaySFX(winClip, winVolume);
+    public void PlayLose() => PlaySFX(loseClip, loseVolume);
+    public void PlayOverclock() => PlaySFX(overclockClip, overclockVolume);
+    public void PlayOverheat() => PlaySFX(overheatClip, overheatVolume);
 
     public void PlaySFX(AudioClip clip, float vol = 0.7f)
     {

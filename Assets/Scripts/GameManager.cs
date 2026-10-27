@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WaveSpawner waveSpawner;
     [SerializeField] private UIManager uiManager;
     [SerializeField] private AudioShakeManager audioManager;
+    [SerializeField] private AudioSource bgmSource;
     #endregion
 
     #region Data & Configuration
@@ -51,6 +52,21 @@ public class GameManager : MonoBehaviour
         {
             TogglePause();
         }
+
+        // DEBUG
+        #if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            Debug.Log("<color=green>DEBUG: Instant Win Triggered!</color>");
+            TriggerWinGame();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            Debug.Log("<color=red>DEBUG: Instant Lose Triggered!</color>");
+            TriggerGameOver();
+        }
+        #endif
     }
     #endregion
 
@@ -121,20 +137,25 @@ public class GameManager : MonoBehaviour
     }
 
     public void TogglePause()
+{
+    if (audioManager != null) audioManager.PlayUIClick();
+    
+    IsPaused = !IsPaused;
+    Time.timeScale = IsPaused ? 0f : 1f;
+    
+    if (uiManager != null) uiManager.SetPausePanelActive(IsPaused);
+
+    if (bgmSource != null)
     {
-        if (audioManager != null) audioManager.PlayUIClick();
-        
-        IsPaused = !IsPaused;
-        Time.timeScale = IsPaused ? 0f : 1f;
-        
-        if (uiManager != null) uiManager.SetPausePanelActive(IsPaused);
+        bgmSource.volume = IsPaused ? 0.1f : 0.3f;
     }
+}
 
     public void RestartGameButton()
     {
         if (audioManager != null) audioManager.PlayUIClick();
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        Time.timeScale = 1f;     
+        StartGameButton(); 
     }
 
     public void QuitToTitleButton()
@@ -174,6 +195,19 @@ public class GameManager : MonoBehaviour
         if (uiManager != null) uiManager.HideSettingsPanel();
     }
 
+    public void ExitGameButton()
+    {
+        if (audioManager != null) audioManager.PlayUIClick();
+        
+        Debug.Log("Exiting Game...");
+        
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+
     #endregion
 
     #region Utility
@@ -190,6 +224,11 @@ public class GameManager : MonoBehaviour
         {
             if (t != null) Destroy(t.gameObject);
         }
+    }
+
+    public void PlayEnemyDeathSound()
+    {
+        if (audioManager != null) audioManager.PlayEnemyDeath();
     }
 
     public Vector3 GetGoldHUDWorldPos() => uiManager != null ? uiManager.GetGoldHUDWorldPos() : new Vector3(0f, 5.2f, 0f);

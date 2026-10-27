@@ -238,6 +238,11 @@ public class EnemyController : MonoBehaviour
             : new Vector3(0f, 5.2f, 0f);
             
         CoinPickupEffect.SpawnCoin(transform.position, goldReward, coinTarget, gameManager);
+        
+        if (gameManager != null) 
+        {
+            gameManager.PlayEnemyDeathSound();
+        }
 
         Destroy(gameObject);
     }

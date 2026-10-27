@@ -121,7 +121,7 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                buildButtonLabels[i].text = $"[{i + 1}] {opt.towerName} ({opt.level1Cost}g)";
+                buildButtonLabels[i].text = $"[{i + 1}] {opt.towerName} ({opt.level1Cost}) Scrap";
                 if (buildButtons[i] != null) buildButtons[i].interactable = (gameManager.CurrentGold >= opt.level1Cost);
             }
         }
@@ -200,24 +200,23 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region Panel State Management
+
     public void ShowTitlePanel() => SetActivePanel(titleScreenPanel);
     public void ShowGameplayHUDPanel() => SetActivePanel(gameplayHUDPanel);
     public void ShowWinPanel() => SetActivePanel(winScreenPanel);
     public void ShowGameOverPanel() => SetActivePanel(gameOverScreenPanel);
-    
     public void ShowSettingsPanel() 
     {
         if (settingsScreenPanel != null) settingsScreenPanel.SetActive(true);
-    }   
+    }
+    public void HideSettingsPanel()
+    {
+        if (settingsScreenPanel != null) settingsScreenPanel.SetActive(false);
+    }
     
     public void SetPausePanelActive(bool paused)
     {
         if (pauseScreenPanel != null) pauseScreenPanel.SetActive(paused);
-    }
-
-    public void HideSettingsPanel()
-    {
-        if (settingsScreenPanel != null) settingsScreenPanel.SetActive(false);
     }
 
     private void SetActivePanel(GameObject activePanel)
@@ -227,6 +226,7 @@ public class UIManager : MonoBehaviour
         if (pauseScreenPanel != null)    pauseScreenPanel.SetActive(activePanel == pauseScreenPanel);
         if (winScreenPanel != null)      winScreenPanel.SetActive(activePanel == winScreenPanel);
         if (gameOverScreenPanel != null) gameOverScreenPanel.SetActive(activePanel == gameOverScreenPanel);
+        
         if (settingsScreenPanel != null) settingsScreenPanel.SetActive(false);
     }
     #endregion
