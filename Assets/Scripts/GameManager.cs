@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
     {
         CoinPickupEffect.GlobalCoinLerpSpeed = config.coinFlyLerpSpeed;
 
-        if (IsGameActive && Input.GetKeyDown(KeyCode.Escape))
+        if (IsGameActive && Input.GetKeyDown(KeyCode.P))
         {
             TogglePause();
         }
